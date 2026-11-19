@@ -8,7 +8,7 @@ android {
     compileSdk = 35
     defaultConfig {
         applicationId = "com.eshort.app"
-        minSdk = 26
+        minSdk = 29
         targetSdk = 35
         versionCode = 1
         versionName = "0.1.0"
@@ -23,6 +23,6 @@ dependencies {
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.material3:material3")
     implementation("androidx.compose.material:material-icons-extended")
-    implementation("androidx.navigation:navigation-compose:2.8.5")
+    implementation("androidx.navigation:navigation-compose:2.8.5")\n    implementation("androidx.media3:media3-transformer:1.5.1")\n    implementation("androidx.media3:media3-effect:1.5.1")
     debugImplementation("androidx.compose.ui:ui-tooling")
 }
