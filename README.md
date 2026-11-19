@@ -1,19 +1,24 @@
-# E SHORT — Android starter
+# E SHORT — Offline Android Video Clip Maker
 
-Independent Android application. The existing U-SHORT repository is untouched.
+E SHORT is an independent Android app for splitting a local video into consecutive short MP4 clips. It does not require an account, API key, or network connection for its implemented workflow.
 
-## Included
-- Kotlin + Jetpack Compose Android project.
-- Purple / blue / pink glass-inspired interface.
-- Home, Studio, setup, editor, AI tool overview and settings screens.
-- AUTO VIRAL, CUSTOM and PRO EDIT workflow selection.
-- Clip duration, aspect ratio and clip count controls.
-- GitHub Actions workflow to build and upload a debug APK artifact.
+## Working features in this build
+- Select a video from the phone using Android's document picker.
+- Preview the selected source video in an installed video player.
+- Choose a clip length: 15, 30, 45, 60, or 90 seconds.
+- Choose a maximum clip count: 1, 3, 5, 10, or 20.
+- Export consecutive MP4 clips using AndroidX Media3 Transformer.
+- Save exported clips to the public Movies/E SHORT folder.
+- Show export progress, completion, and errors; play the last exported clip.
 
-## Current implementation status
-This is the first Android UI foundation. Real video ingestion, authorized source download, AI highlight detection, face tracking, speech recognition, subtitle generation, rendering and final export are not yet connected. The app must not present those engines as working until implemented and tested.
+## Important scope
+This release is deliberately limited to functions implemented in the app. It does not claim to provide AI highlight detection, automatic speech recognition/captions, face tracking, URL downloading, a multi-track timeline, effects, or professional editing. Those features are not presented as working controls.
+
+The clipper creates consecutive segments from the beginning of the selected video; it does not analyze content or select viral moments. The final segment can be shorter than the chosen duration.
 
 ## Build
-The GitHub Actions workflow builds with JDK 17 and Gradle 8.9 using `gradle assembleDebug`.
+GitHub Actions builds the debug APK with JDK 17 and Gradle 8.9.
 
-Application ID: `com.eshort.app`
+- Application ID: `com.eshort.app`
+- Minimum Android: Android 10 (API 29)
+- Output folder: `Movies/E SHORT`
