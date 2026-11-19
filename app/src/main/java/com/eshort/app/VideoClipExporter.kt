@@ -37,10 +37,13 @@ object VideoClipExporter {
         }
         val durationSeconds = try {
             val retriever = MediaMetadataRetriever()
-            retriever.setDataSource(context, source)
-            val duration = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)?.toLongOrNull() ?: 0L
-            retriever.release()
-            duration / 1000L
+            try {
+                retriever.setDataSource(context, source)
+                val duration = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)?.toLongOrNull() ?: 0L
+                duration / 1000L
+            } finally {
+                retriever.release()
+            }
         } catch (e: Exception) {
             onError("Could not read this video: ${e.localizedMessage ?: "unsupported format"}")
             return
@@ -77,25 +80,30 @@ object VideoClipExporter {
             val transformer = Transformer.Builder(context)
                 .addListener(object : Transformer.Listener {
                     override fun onCompleted(composition: androidx.media3.transformer.Composition, exportResult: ExportResult) {
+                        var outputUri: Uri? = null
                         try {
+                            if (!tempFile.exists() || tempFile.length() == 0L) {
+                                throw IOException("The video encoder produced an empty file.")
+                            }
                             val values = ContentValues().apply {
                                 put(MediaStore.Video.Media.DISPLAY_NAME, String.format(Locale.US, "E_SHORT_%02d_%d.mp4", index + 1, System.currentTimeMillis()))
                                 put(MediaStore.Video.Media.MIME_TYPE, "video/mp4")
                                 put(MediaStore.Video.Media.RELATIVE_PATH, Environment.DIRECTORY_MOVIES + "/E SHORT")
                                 put(MediaStore.Video.Media.IS_PENDING, 1)
                             }
-                            val outputUri = context.contentResolver.insert(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, values)
+                            outputUri = context.contentResolver.insert(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, values)
                                 ?: throw IOException("Could not create a video in the gallery.")
-                            context.contentResolver.openOutputStream(outputUri)?.use { output ->
+                            context.contentResolver.openOutputStream(outputUri!!)?.use { output ->
                                 FileInputStream(tempFile).use { input -> input.copyTo(output) }
                             } ?: throw IOException("Could not write the exported video.")
                             values.clear()
                             values.put(MediaStore.Video.Media.IS_PENDING, 0)
-                            context.contentResolver.update(outputUri, values, null, null)
-                            saved.add(outputUri)
+                            context.contentResolver.update(outputUri!!, values, null, null)
+                            saved.add(outputUri!!)
                             tempFile.delete()
                             exportNext(index + 1)
                         } catch (e: Exception) {
+                            outputUri?.let { try { context.contentResolver.delete(it, null, null) } catch (_: Exception) { } }
                             tempFile.delete()
                             onError("Could not save clip ${index + 1}: ${e.localizedMessage ?: "storage error"}")
                         }
