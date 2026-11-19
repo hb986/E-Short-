@@ -18,6 +18,7 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
@@ -42,8 +43,7 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-private fun EShortApp() {
-    var page by remember { mutableStateOf("Home") }
+private fun EShortApp() {\n    val context = LocalContext.current\n    var page by remember { mutableStateOf("Home") }
     var mode by remember { mutableStateOf("AUTO VIRAL") }
     var url by remember { mutableStateOf("") }
     var duration by remember { mutableStateOf("30 sec") }
@@ -58,7 +58,7 @@ private fun EShortApp() {
         if (uri != null) {
             try { this@EShortAppContextPlaceholder }
             catch (_: Exception) { }
-            videoUri = uri
+            try { context.contentResolver.takePersistableUriPermission(uri, android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION) } catch (_: Exception) { }\n            videoUri = uri
         }
     }
 
@@ -82,7 +82,7 @@ private fun EShortApp() {
                     "Face Tracking" -> InfoPage("AUTO FACE TRACKING", listOf("Face detection workflow", "Speaker focus and subject selection", "Vertical smart reframing", "Stable crop guidance"), true)
                     "Smart Captions" -> InfoPage("SMART CAPTIONS", listOf("Arabic and English subtitles", "Word highlighting", "Caption style controls", "Manual text correction"), true)
                     "Viral AI" -> InfoPage("VIRAL INTELLIGENCE", listOf("Hook strength analysis", "Pacing suggestions", "Title and hashtag ideas", "Clip ranking guidance"), true)
-                    else -> HomePage(url, { url = it }, { page = "Setup" }, { page = "Studio" }, message, videoUri, { videoPicker.launch(arrayOf("video/*")) }, exportBusy, exportProgress, exportResult, {\n                        if (videoUri == null) { exportResult = "Choose a video first." }\n                        else {\n                            exportBusy = true; exportResult = ""; exportProgress = "Preparing clips…"\n                            VideoClipExporter.export(this@MainActivity, videoUri!!, duration.substringBefore(" ").toIntOrNull() ?: 30, if (clips == "Auto") 20 else clips.toIntOrNull() ?: 5,\n                                onProgress = { exportProgress = it },\n                                onComplete = { exportBusy = false; exportProgress = ""; exportResult = "Saved ${it.size} clips to Movies/E SHORT." },\n                                onError = { exportBusy = false; exportProgress = ""; exportResult = it }\n                            )\n                        }\n                    })
+                    else -> HomePage(url, { url = it }, { page = "Setup" }, { page = "Studio" }, message, videoUri, { videoPicker.launch(arrayOf("video/*")) }, exportBusy, exportProgress, exportResult, {\n                        if (videoUri == null) { exportResult = "Choose a video first." }\n                        else {\n                            exportBusy = true; exportResult = ""; exportProgress = "Preparing clips…"\n                            VideoClipExporter.export(context, videoUri!!, duration.substringBefore(" ").toIntOrNull() ?: 30, if (clips == "Auto") 20 else clips.toIntOrNull() ?: 5,\n                                onProgress = { exportProgress = it },\n                                onComplete = { exportBusy = false; exportProgress = ""; exportResult = "Saved ${it.size} clips to Movies/E SHORT." },\n                                onError = { exportBusy = false; exportProgress = ""; exportResult = it }\n                            )\n                        }\n                    })
                 }
                 Spacer(Modifier.weight(1f))
                 Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 10.dp).clip(RoundedCornerShape(25.dp)).background(Glass).border(1.dp, Color.White.copy(.2f), RoundedCornerShape(25.dp)).padding(7.dp), horizontalArrangement = Arrangement.SpaceEvenly) {
