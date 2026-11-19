@@ -33,7 +33,7 @@ jobs:
       - name: Verify Gradle files
         run: gradle --version
 
-      - name: Build debug APK
+      # Java and Kotlin are both configured for JVM 17 in the Android module.\n      - name: Build debug APK
         run: gradle --no-daemon --stacktrace assembleDebug
 
       - uses: actions/upload-artifact@v4
