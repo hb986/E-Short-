@@ -1,6 +1,9 @@
 package com.eshort.app
 
 import android.os.Bundle
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
@@ -47,6 +50,17 @@ private fun EShortApp() {
     var ratio by remember { mutableStateOf("9:16") }
     var clips by remember { mutableStateOf("5") }
     var message by remember { mutableStateOf("") }
+    var videoUri by remember { mutableStateOf<Uri?>(null) }
+    var exportProgress by remember { mutableStateOf("") }
+    var exportBusy by remember { mutableStateOf(false) }
+    var exportResult by remember { mutableStateOf("") }
+    val videoPicker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+        if (uri != null) {
+            try { this@EShortAppContextPlaceholder }
+            catch (_: Exception) { }
+            videoUri = uri
+        }
+    }
 
     MaterialTheme(colorScheme = darkColorScheme(primary = Color(0xFFE2C6FF), background = Color(0xFF1B1038), surface = Color(0xFF35205C), onBackground = White, onSurface = White)) {
         Box(Modifier.fillMaxSize().background(Brush.linearGradient(listOf(Color(0xFF211044), Color(0xFF542887), Color(0xFF354FA8), Color(0xFF251044))))) {
@@ -68,7 +82,7 @@ private fun EShortApp() {
                     "Face Tracking" -> InfoPage("AUTO FACE TRACKING", listOf("Face detection workflow", "Speaker focus and subject selection", "Vertical smart reframing", "Stable crop guidance"), true)
                     "Smart Captions" -> InfoPage("SMART CAPTIONS", listOf("Arabic and English subtitles", "Word highlighting", "Caption style controls", "Manual text correction"), true)
                     "Viral AI" -> InfoPage("VIRAL INTELLIGENCE", listOf("Hook strength analysis", "Pacing suggestions", "Title and hashtag ideas", "Clip ranking guidance"), true)
-                    else -> HomePage(url, { url = it }, { page = "Setup" }, { page = "Studio" }, message)
+                    else -> HomePage(url, { url = it }, { page = "Setup" }, { page = "Studio" }, message, videoUri, { videoPicker.launch(arrayOf("video/*")) }, exportBusy, exportProgress, exportResult, {\n                        if (videoUri == null) { exportResult = "Choose a video first." }\n                        else {\n                            exportBusy = true; exportResult = ""; exportProgress = "Preparing clips…"\n                            VideoClipExporter.export(this@MainActivity, videoUri!!, duration.substringBefore(" ").toIntOrNull() ?: 30, if (clips == "Auto") 20 else clips.toIntOrNull() ?: 5,\n                                onProgress = { exportProgress = it },\n                                onComplete = { exportBusy = false; exportProgress = ""; exportResult = "Saved ${it.size} clips to Movies/E SHORT." },\n                                onError = { exportBusy = false; exportProgress = ""; exportResult = it }\n                            )\n                        }\n                    })
                 }
                 Spacer(Modifier.weight(1f))
                 Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 10.dp).clip(RoundedCornerShape(25.dp)).background(Glass).border(1.dp, Color.White.copy(.2f), RoundedCornerShape(25.dp)).padding(7.dp), horizontalArrangement = Arrangement.SpaceEvenly) {
@@ -85,7 +99,7 @@ private fun EShortApp() {
 }
 
 @Composable
-private fun HomePage(url: String, onUrl: (String) -> Unit, setup: () -> Unit, studio: () -> Unit, message: String) {
+private fun HomePage(url: String, onUrl: (String) -> Unit, setup: () -> Unit, studio: () -> Unit, message: String, selectedVideo: Uri?, pickVideo: () -> Unit, exportBusy: Boolean, exportProgress: String, exportResult: String, generate: () -> Unit) {
     LazyColumn(Modifier.fillMaxWidth().padding(horizontal = 18.dp), verticalArrangement = Arrangement.spacedBy(14.dp), contentPadding = PaddingValues(bottom = 12.dp)) {
         item {
             Text("Create videos\nworth watching.", color = White, fontSize = 29.sp, fontWeight = FontWeight.Bold, lineHeight = 34.sp)
@@ -95,7 +109,7 @@ private fun HomePage(url: String, onUrl: (String) -> Unit, setup: () -> Unit, st
             GlassCard {
                 Text("VIDEO SOURCE", color = White, fontWeight = FontWeight.Bold, fontSize = 12.sp)
                 OutlinedTextField(url, onUrl, Modifier.fillMaxWidth(), placeholder = { Text("Paste a video link…", color = White.copy(.5f)) }, singleLine = true, shape = RoundedCornerShape(17.dp), colors = fieldColors())
-                GlowButton("CHOOSE CLIP SETTINGS", Icons.Default.Tune, setup)
+                GlowButton("CHOOSE VIDEO FROM PHONE", Icons.Default.VideoLibrary, pickVideo)\n                Text(selectedVideo?.lastPathSegment?.take(48) ?: "No video selected", color = White.copy(.72f), fontSize = 10.sp)\n                GlowButton("CHOOSE CLIP SETTINGS", Icons.Default.Tune, setup)\n                GlowButton(if (exportBusy) "GENERATING…" else "GENERATE SHORTS", Icons.Default.AutoAwesome, generate)\n                if (exportBusy) LinearProgressIndicator(Modifier.fillMaxWidth(), color = Color(0xFFE7C6FF))\n                if (exportProgress.isNotBlank()) Text(exportProgress, color = White, fontSize = 11.sp)\n                if (exportResult.isNotBlank()) Text(exportResult, color = Color(0xFFFFD9A8), fontSize = 11.sp)
             }
         }
         item {
