@@ -113,8 +113,7 @@ private fun EShortApp() {
 private fun HomePage(url: String, onUrl: (String) -> Unit, setup: () -> Unit, studio: () -> Unit, message: String, selectedVideo: Uri?, pickVideo: () -> Unit, exportBusy: Boolean, exportProgress: String, exportResult: String, generate: () -> Unit) {
     LazyColumn(Modifier.fillMaxWidth().padding(horizontal = 18.dp), verticalArrangement = Arrangement.spacedBy(14.dp), contentPadding = PaddingValues(bottom = 12.dp)) {
         item {
-            Text("Create videos
-worth watching.", color = White, fontSize = 29.sp, fontWeight = FontWeight.Bold, lineHeight = 34.sp)
+            Text("Create videos worth watching.", color = White, fontSize = 29.sp, fontWeight = FontWeight.Bold, lineHeight = 34.sp)
             Text("Turn long videos into short-form stories.", color = White.copy(.72f), fontSize = 13.sp)
         }
         item {
