@@ -1,4 +1,4 @@
-name: Build E SHORT APK
+name: Build E SHORT APK - verified
 
 on:
   workflow_dispatch:
